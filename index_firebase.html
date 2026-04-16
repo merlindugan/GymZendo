@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi Gimnasio</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f4f0;color:#1a1a1a;min-height:100vh}
+a,button,input,select,textarea{font-family:inherit}
+.app-shell{display:flex;min-height:100vh}
+.sidebar{width:220px;background:#fff;border-right:1px solid #e8e6e0;padding:1.5rem 1rem;display:flex;flex-direction:column;gap:4px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto}
+.main{flex:1;padding:2rem;max-width:900px}
+.logo{font-size:17px;font-weight:600;color:#1a1a1a;padding:0 8px;margin-bottom:1.5rem;display:flex;align-items:center;gap:8px}
+.logo-icon{width:28px;height:28px;border-radius:8px;background:#1a1a1a;display:flex;align-items:center;justify-content:center}
+.logo-icon svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:14px;color:#5f5e5a;border:none;background:transparent;width:100%;text-align:left;transition:background 0.1s}
+.nav-item:hover{background:#f5f4f0;color:#1a1a1a}
+.nav-item.active{background:#f0ede8;color:#1a1a1a;font-weight:500}
+.nav-item svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;flex-shrink:0}
+.nav-section{font-size:11px;color:#b4b2a9;font-weight:500;padding:12px 10px 4px;letter-spacing:0.05em;text-transform:uppercase}
+.screen{display:none}.screen.active{display:block}
+.card{background:#fff;border:1px solid #e8e6e0;border-radius:12px;padding:1.25rem;margin-bottom:1rem}
+.card-sm{background:#fff;border:1px solid #e8e6e0;border-radius:10px;padding:1rem;margin-bottom:0.75rem}
+.metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:1.5rem}
+.metric{background:#fff;border:1px solid #e8e6e0;border-radius:10px;padding:1rem;text-align:center}
+.metric-val{font-size:26px;font-weight:600;color:#1a1a1a}
+.metric-lbl{font-size:11px;color:#888780;margin-top:3px}
+.athlete-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.athlete-card{background:#fff;border:1px solid #e8e6e0;border-radius:12px;padding:1.25rem;cursor:pointer;transition:border-color 0.15s,box-shadow 0.15s}
+.athlete-card:hover{border-color:#b4b2a9;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+.avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;flex-shrink:0;overflow:hidden}
+.avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.avatar-md{width:48px;height:48px;font-size:16px}
+.avatar-lg{width:72px;height:72px;font-size:24px}
+.tier-badge{display:inline-flex;align-items:center;justify-content:center;padding:3px 10px;border-radius:6px;font-size:12px;font-weight:700;border:1.5px solid}
+.form-row{display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.field{display:flex;flex-direction:column;gap:5px;flex:1;min-width:130px}
+.field label{font-size:12px;color:#888780;font-weight:500}
+.field input,.field select,.field textarea{width:100%;padding:8px 10px;border:1px solid #e8e6e0;border-radius:8px;font-size:14px;color:#1a1a1a;background:#fff;outline:none;transition:border-color 0.15s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#888780}
+.field textarea{height:72px;resize:vertical}
+.btn{padding:8px 18px;border-radius:8px;font-size:14px;cursor:pointer;border:1px solid;font-weight:500;transition:background 0.1s}
+.btn-dark{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.btn-dark:hover{background:#333}
+.btn-ghost{background:transparent;color:#5f5e5a;border-color:#e8e6e0}
+.btn-ghost:hover{background:#f5f4f0}
+.btn-danger{background:transparent;color:#a32d2d;border-color:#f7c1c1;font-size:13px;padding:6px 14px}
+.btn-danger:hover{background:#fcebeb}
+.tier-select{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.tier-opt{padding:5px 10px;border:1px solid #e8e6e0;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;background:transparent;color:#888780;transition:all 0.1s}
+.tier-opt:hover{border-color:#b4b2a9;color:#1a1a1a}
+.tier-opt.sel{border-width:2px}
+.tabs{display:flex;gap:4px;margin-bottom:1.25rem;flex-wrap:wrap;border-bottom:1px solid #e8e6e0;padding-bottom:0}
+.tab{padding:8px 14px;border:none;background:transparent;cursor:pointer;font-size:13px;color:#888780;font-weight:500;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color 0.1s}
+.tab:hover{color:#1a1a1a}
+.tab.active{color:#1a1a1a;border-bottom-color:#1a1a1a}
+.tab-content{display:none}.tab-content.active{display:block}
+.log-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f0ede8}
+.log-item:last-child{border-bottom:none}
+.log-date{font-size:12px;color:#b4b2a9;white-space:nowrap;margin-left:12px}
+.log-main{font-size:14px;color:#1a1a1a;font-weight:500}
+.rec-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #f0ede8;font-size:13px}
+.rec-row:last-child{border-bottom:none}
+.badge{display:inline-block;padding:3px 8px;border-radius:5px;font-size:11px;font-weight:600}
+.badge-green{background:#e1f5ee;color:#085041}
+.badge-purple{background:#eeedfe;color:#3c3489}
+.badge-amber{background:#faeeda;color:#633806}
+.badge-red{background:#fcebeb;color:#791f1f}
+.bday-banner{border-radius:10px;padding:12px 16px;margin-bottom:1rem;display:flex;align-items:center;gap:12px}
+.bday-today{background:#faeeda;border:1px solid #fac775}
+.bday-soon{background:#f1efe8;border:1px solid #d3d1c7}
+.rounds-bar{background:#f0ede8;border-radius:4px;height:6px;overflow:hidden;margin-top:5px}
+.rounds-fill{height:100%;border-radius:4px;background:#534AB7}
+.att-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:10px}
+.att-dot{width:100%;aspect-ratio:1;border-radius:4px;background:#f0ede8}
+.att-dot.present{background:#1D9E75}.att-dot.absent{background:#F09595}
+.profile-header{display:flex;align-items:flex-start;gap:18px;margin-bottom:1.5rem;flex-wrap:wrap}
+.alert{border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:1rem}
+.alert-ok{background:#e1f5ee;border:1px solid #9fe1cb;color:#085041}
+.alert-err{background:#fcebeb;border:1px solid #f7c1c1;color:#791f1f}
+.section-title{font-size:20px;font-weight:600;color:#1a1a1a;margin-bottom:1.25rem}
+.back-btn{display:flex;align-items:center;gap:6px;font-size:13px;color:#888780;cursor:pointer;margin-bottom:1.25rem;background:none;border:none;padding:0}
+.back-btn:hover{color:#1a1a1a}
+.empty{text-align:center;padding:3rem 1rem;color:#b4b2a9;font-size:14px}
+
+/* Photo upload */
+.photo-wrap{position:relative;display:inline-block;cursor:pointer}
+.photo-wrap:hover .photo-overlay{opacity:1}
+.photo-overlay{position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s}
+.photo-overlay svg{stroke:#fff;fill:none;stroke-width:2}
+.photo-input{display:none}
+
+/* Photo upload in form */
+.photo-upload-box{width:80px;height:80px;border-radius:50%;border:2px dashed #e8e6e0;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;gap:4px;transition:border-color 0.15s;overflow:hidden;flex-shrink:0}
+.photo-upload-box:hover{border-color:#888780}
+.photo-upload-box img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:300;align-items:center;justify-content:center;padding:1rem}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:16px;padding:1.5rem;width:100%;max-width:520px;max-height:90vh;overflow-y:auto}
+.modal-title{font-size:17px;font-weight:600;margin-bottom:1.25rem}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:1.25rem;flex-wrap:wrap}
+
+/* Mini radar on athlete cards */
+.mini-radar{display:block;margin:10px auto 0;opacity:0.9}
+
+/* Challenge card */
+.challenge-card{background:#fff;border:1px solid #e8e6e0;border-radius:12px;padding:1.25rem;margin-bottom:1rem;position:relative}
+.challenge-pending{border-left:3px solid #EF9F27}
+.challenge-check{border-left:3px solid #1D9E75}
+.challenge-overdue{border-left:3px solid #E24B4A}
+.threshold-pip{display:inline-block;width:10px;height:10px;border-radius:50%;background:#534AB7;margin-right:3px}
+.threshold-pip.empty{background:#f0ede8}
+
+.menu-toggle{display:none;background:none;border:none;cursor:pointer;padding:8px}
+.mobile-header{display:none;background:#fff;border-bottom:1px solid #e8e6e0;padding:12px 1rem;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:150}
+.overlay.open{display:block}
+
+@media(max-width:680px){
+  .sidebar{display:none;position:fixed;top:0;left:0;height:100vh;z-index:200;width:240px}
+  .sidebar.open{display:flex}
+  .mobile-header{display:flex}
+  .main{padding:1rem}
+  .metric-val{font-size:20px}
+  .app-shell{flex-direction:column}
+}
+</style>
+</head>
+<body>
+
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<!-- Edit athlete modal -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <div class="modal-title">Editar alumno</div>
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:1.25rem">
+      <div class="photo-upload-box" id="editPhotoBox" onclick="document.getElementById('editPhotoInput').click()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b4b2a9" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        <span style="font-size:10px;color:#b4b2a9">Foto</span>
+      </div>
+      <input type="file" id="editPhotoInput" accept="image/*" style="display:none" onchange="previewEditPhoto(event)">
+      <div style="flex:1">
+        <div class="field"><label>Nombre completo</label><input id="editName" type="text"></div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>Fecha de nacimiento</label><input id="editBday" type="date"></div>
+      <div class="field"><label>Disciplina</label><input id="editCategory" type="text"></div>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>Peso (kg)</label><input id="editWeight" type="number"></div>
+      <div class="field"><label>Altura (cm)</label><input id="editHeight" type="number"></div>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>Fecha de inicio</label><input id="editStartDate" type="date"></div>
+      <div class="field"><label>Vencimiento de cuota</label><input id="editQuotaDate" type="date"></div>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>Plan</label>
+        <select id="editPlan">
+          <option value="">Sin especificar</option>
+          <option value="basico">Básico</option>
+          <option value="intermedio">Intermedio</option>
+          <option value="avanzado">Avanzado</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>Notas</label><textarea id="editNotes"></textarea></div>
+    </div>
+    <div id="editMsg"></div>
+    <div class="modal-footer">
+      <button class="btn btn-danger" onclick="deleteAthlete()">Eliminar alumno</button>
+      <button class="btn btn-ghost" onclick="closeEditModal()">Cancelar</button>
+      <button class="btn btn-dark" onclick="saveEditAthlete()">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+<div class="mobile-header">
+  <button class="menu-toggle" onclick="toggleSidebar()">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <span style="font-size:16px;font-weight:600">Mi Gimnasio</span>
+  <div style="width:38px"></div>
+</div>
+
+<div class="app-shell">
+<nav class="sidebar" id="sidebar">
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M6 4v16M18 4v16M2 8h4M18 8h4M2 16h4M18 16h4"/></svg>
+    </div>
+    Mi Gimnasio
+  </div>
+  <button class="nav-item active" onclick="nav('dashboard',this)">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    Panel
+  </button>
+  <button class="nav-item" onclick="nav('athletes',this)">
+    <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    Alumnos
+  </button>
+  <button class="nav-item" onclick="nav('compare',this)">
+    <svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+    Comparar
+  </button>
+  <button class="nav-item" onclick="nav('challenges',this)">
+    <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+    Retos mensuales
+  </button>
+  <div class="nav-section">Registrar</div>
+  <button class="nav-item" onclick="nav('addAthlete',this)">
+    <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
+    Nuevo alumno
+  </button>
+  <button class="nav-item" onclick="nav('logActivity',this)">
+    <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+    Nuevo registro
+  </button>
+</nav>
+
+<main class="main">
+  <div id="bdayAlert"></div>
+
+  <div id="screen-dashboard" class="screen active">
+    <div class="section-title">Panel general</div>
+    <div class="metric-grid" id="globalMetrics"></div>
+    <div class="card">
+      <div style="font-size:15px;font-weight:600;margin-bottom:1rem">Actividad reciente</div>
+      <div id="recentActivity"></div>
+    </div>
+  </div>
+
+  <div id="screen-athletes" class="screen">
+    <div class="section-title">Alumnos</div>
+    <div class="card" style="padding:1rem;margin-bottom:1rem">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+        <div class="field" style="min-width:110px;margin-bottom:0">
+          <label>Ordenar por</label>
+          <select id="filterSort" onchange="renderAthletes()">
+            <option value="name">Nombre</option>
+            <option value="tier">Rango</option>
+            <option value="score">Puntaje</option>
+            <option value="rounds">Rounds</option>
+            <option value="attendance">Asistencia</option>
+            <option value="achievements">Logros</option>
+          </select>
+        </div>
+        <div class="field" style="min-width:100px;margin-bottom:0">
+          <label>Rango</label>
+          <select id="filterTier" onchange="renderAthletes()">
+            <option value="">Todos</option>
+            <option value="A+">A+</option>
+            <option value="A">A</option>
+            <option value="A-">A-</option>
+            <option value="B+">B+</option>
+            <option value="B">B</option>
+            <option value="B-">B-</option>
+            <option value="C+">C+</option>
+            <option value="C">C</option>
+            <option value="C-">C-</option>
+          </select>
+        </div>
+        <div class="field" style="min-width:110px;margin-bottom:0">
+          <label>Estado</label>
+          <select id="filterStatus" onchange="renderAthletes()">
+            <option value="">Todos</option>
+            <option value="active">Activos</option>
+            <option value="inactive">Inactivos</option>
+          </select>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">
+          <button class="btn btn-ghost" style="font-size:12px;padding:5px 12px" id="sortDirBtn" onclick="toggleSortDir()">↓ Mayor primero</button>
+        </div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:6px;margin-bottom:2px">
+          <span id="filterCount" style="font-size:12px;color:#888780"></span>
+          <button class="btn btn-ghost" style="font-size:12px;padding:5px 12px" onclick="resetFilters()">Limpiar</button>
+        </div>
+      </div>
+    </div>
+    <div class="athlete-grid" id="athleteGrid"></div>
+  </div>
+
+  <div id="screen-addAthlete" class="screen">
+    <div class="section-title">Nuevo alumno</div>
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:1rem">
+        <div class="photo-upload-box" id="newPhotoBox" onclick="document.getElementById('newPhotoInput').click()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b4b2a9" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          <span style="font-size:10px;color:#b4b2a9">Foto</span>
+        </div>
+        <input type="file" id="newPhotoInput" accept="image/*" style="display:none" onchange="previewNewPhoto(event)">
+        <div style="flex:1"><div class="field"><label>Nombre completo</label><input id="newName" type="text" placeholder="Ej: Lucas Pérez"></div></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>Fecha de nacimiento</label><input id="newBday" type="date"></div>
+        <div class="field"><label>Disciplina</label><input id="newCategory" type="text" placeholder="Ej: Boxeo, MMA, Muay Thai"></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>Peso (kg)</label><input id="newWeight" type="number" placeholder="70"></div>
+        <div class="field"><label>Altura (cm)</label><input id="newHeight" type="number" placeholder="175"></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>Fecha de inicio</label><input id="newStartDate" type="date"></div>
+        <div class="field"><label>Vencimiento de cuota</label><input id="newQuotaDate" type="date"></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>Plan</label>
+          <select id="newPlan">
+            <option value="">Sin especificar</option>
+            <option value="basico">Básico</option>
+            <option value="intermedio">Intermedio</option>
+            <option value="avanzado">Avanzado</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>Rango</label>
+          <div class="tier-select" id="newTierSelect"></div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>Notas</label><textarea id="newNotes" placeholder="Lesiones, objetivos, observaciones..."></textarea></div>
+      </div>
+      <div id="addAthleteMsg"></div>
+      <button class="btn btn-dark" onclick="addAthlete()">Guardar alumno</button>
+    </div>
+  </div>
+
+  <div id="screen-logActivity" class="screen">
+    <div class="section-title">Nuevo registro</div>
+    <div class="card">
+      <div class="form-row">
+        <div class="field"><label>Alumno</label><select id="logAthlete"><option value="">Seleccionar...</option></select></div>
+        <div class="field"><label>Fecha</label><input id="logDate" type="date"></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>Tipo de registro</label>
+          <select id="logType" onchange="toggleLogFields()">
+            <option value="attendance">Asistencia</option>
+            <option value="sparring">Sparring</option>
+            <option value="achievement">Logro</option>
+            <option value="record">Récord de ejercicio</option>
+          </select>
+        </div>
+      </div>
+      <div id="logFieldAttendance">
+        <div class="form-row"><div class="field"><label>Estado</label><select id="logAttStatus"><option value="present">Presente</option><option value="absent">Ausente</option></select></div></div>
+      </div>
+      <div id="logFieldSparring" style="display:none">
+        <div class="form-row">
+          <div class="field"><label>Rounds</label><input id="logRounds" type="number" placeholder="3" min="1"></div>
+          <div class="field"><label>Rival (opcional)</label><input id="logRival" type="text" placeholder="Nombre"></div>
+        </div>
+        <div class="form-row"><div class="field"><label>Notas</label><input id="logSparNotes" type="text" placeholder="Ej: Buen trabajo en clinch"></div></div>
+      </div>
+      <div id="logFieldAchievement" style="display:none">
+        <div class="form-row"><div class="field"><label>Descripción del logro</label><input id="logAchDesc" type="text" placeholder="Ej: Primer KO, ganó torneo..."></div></div>
+      </div>
+      <div id="logFieldRecord" style="display:none">
+        <div class="form-row">
+          <div class="field"><label>Ejercicio</label><input id="logRecType" type="text" placeholder="Ej: Sentadilla, Peso muerto..."></div>
+          <div class="field"><label>Marca</label><input id="logRecVal" type="text" placeholder="Ej: 120 kg, 15 reps..."></div>
+        </div>
+      </div>
+      <div id="logMsg"></div>
+      <button class="btn btn-dark" onclick="saveLog()">Guardar registro</button>
+    </div>
+  </div>
+
+  <div id="screen-profile" class="screen">
+    <button class="back-btn" onclick="nav('athletes',null)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      Volver a alumnos
+    </button>
+    <div class="profile-header">
+      <div style="position:relative">
+        <div class="avatar avatar-lg" id="profileAvatar"></div>
+        <div class="photo-wrap" style="position:absolute;inset:0;border-radius:50%" onclick="document.getElementById('profilePhotoInput').click()">
+          <div class="photo-overlay">
+            <svg width="20" height="20" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          </div>
+        </div>
+        <input type="file" id="profilePhotoInput" accept="image/*" style="display:none" onchange="saveProfilePhoto(event)">
+      </div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px">
+          <span style="font-size:22px;font-weight:700" id="profileName"></span>
+          <span id="profileStatusDot"></span>
+          <span id="profileTierBadge"></span>
+          <span id="profileScoreBadge"></span>
+          <span id="profileBdayBadge"></span>
+        </div>
+        <div style="font-size:13px;color:#888780;margin-bottom:12px" id="profileMeta"></div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+          <span style="font-size:12px;color:#888780">Rango:</span>
+          <div id="profileTierSelect" class="tier-select"></div>
+        </div>
+        <button class="btn btn-ghost" style="font-size:12px;padding:5px 12px" onclick="openEditModal()">
+          Editar datos
+        </button>
+        <button id="statusToggleBtn" class="btn btn-ghost" style="font-size:12px;padding:5px 12px;margin-left:4px" onclick="toggleAthleteStatus()"></button>
+      </div>
+    </div>
+    <div class="metric-grid" id="profileMetrics"></div>
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab(event,'info')">Datos</button>
+      <button class="tab" onclick="switchTab(event,'sparring')">Sparrings</button>
+      <button class="tab" onclick="switchTab(event,'attendance')">Asistencia</button>
+      <button class="tab" onclick="switchTab(event,'achievements')">Logros</button>
+      <button class="tab" onclick="switchTab(event,'records')">Récords</button>
+      <button class="tab" onclick="switchTab(event,'progress')">Progreso</button>
+      <button class="tab" onclick="switchTab(event,'challenge')">Reto</button>
+    </div>
+    <div id="tab-info" class="tab-content active"></div>
+    <div id="tab-sparring" class="tab-content"></div>
+    <div id="tab-attendance" class="tab-content"></div>
+    <div id="tab-achievements" class="tab-content"></div>
+    <div id="tab-records" class="tab-content"></div>
+    <div id="tab-progress" class="tab-content"></div>
+    <div id="tab-challenge" class="tab-content"></div>
+  <div id="screen-compare" class="screen">
+    <div class="section-title">Comparar alumnos</div>
+    <div class="card" style="margin-bottom:1.5rem">
+      <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end">
+        <div class="field" style="min-width:160px;margin-bottom:0">
+          <label>Alumno A</label>
+          <select id="compareA" onchange="renderCompare()"><option value="">Seleccionar...</option></select>
+        </div>
+        <div class="field" style="min-width:160px;margin-bottom:0">
+          <label>Alumno B</label>
+          <select id="compareB" onchange="renderCompare()"><option value="">Seleccionar...</option></select>
+        </div>
+      </div>
+    </div>
+    <div id="compareResult"></div>
+  </div>
+
+  <div id="screen-challenges" class="screen">
+    <div class="section-title">Retos mensuales</div>
+    <div id="challengesList"></div>
+  </div>
+
+</main>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA-k1_bF1xnR-N8uerPcOFXinXnlyxMX3g",
+  authDomain: "jericho-zendo.firebaseapp.com",
+  projectId: "jericho-zendo",
+  storageBucket: "jericho-zendo.firebasestorage.app",
+  messagingSenderId: "969109324248",
+  appId: "1:969109324248:web:b23a5f9f2ded4ccdf9b2ad",
+  measurementId: "G-058ZX9QVEY"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+window.gs = async function(k, d){
+  const ref = doc(db, "storage", k);
+  const snap = await getDoc(ref);
+  return snap.exists() ? snap.data().value : d;
+}
+
+window.ss = async function(k, v){
+  const ref = doc(db, "storage", k);
+  await setDoc(ref, { value: v });
+}
+</script>
+
+<script>
+const TIERS=[
+  {label:'A+',bg:'#EEEDFE',color:'#3C3489',border:'#7F77DD'},
+  {label:'A', bg:'#E1F5EE',color:'#085041',border:'#1D9E75'},
+  {label:'A-',bg:'#EAF3DE',color:'#27500A',border:'#639922'},
+  {label:'B+',bg:'#E6F1FB',color:'#0C447C',border:'#378ADD'},
+  {label:'B', bg:'#f1efe8',color:'#444441',border:'#888780'},
+  {label:'B-',bg:'#F1EFE8',color:'#5f5e5a',border:'#B4B2A9'},
+  {label:'C+',bg:'#FAEEDA',color:'#633806',border:'#EF9F27'},
+  {label:'C', bg:'#FAECE7',color:'#712B13',border:'#D85A30'},
+  {label:'C-',bg:'#FCEBEB',color:'#791F1F',border:'#E24B4A'},
+];
+// A+ = 8 (best), C- = 0 (lowest)
+const TIER_RANK={'A+':8,'A':7,'A-':6,'B+':5,'B':4,'B-':3,'C+':2,'C':1,'C-':0};
+
+function athleteScore(aid){
+  const STATS=['Potencia','Velocidad','Técnica','Defensa','Fuerza','Cardio'];
+  const snapshots=gs('mg_snap_'+aid,[]);
+  if(!snapshots.length) return null;
+  const snap=snapshots[snapshots.length-1];
+  const vals=STATS.map(s=>snap[s]||0);
+  const sum=vals.reduce((a,b)=>a+b,0);
+  if(!sum) return null;
+  return parseFloat((sum/STATS.length).toFixed(1));
+}
+
+const PLAN_LABELS={basico:'Básico',intermedio:'Intermedio',avanzado:'Avanzado'};
+const AVCOLS=[
+  {bg:'#EEEDFE',c:'#3C3489'},{bg:'#E1F5EE',c:'#085041'},
+  {bg:'#FAECE7',c:'#712B13'},{bg:'#E6F1FB',c:'#0C447C'},
+  {bg:'#FAEEDA',c:'#633806'},{bg:'#FBEAF0',c:'#72243E'}
+];
+
+function gs(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}}
+function ss(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+
+let athletes = [];//replaced
+
+async function initApp(){
+  athletes = await gs('mg_athletes', []);
+  logs = await gs('mg_logs', []);
+  nAid = await gs('mg_naid', 1);
+  nLid = await gs('mg_nlid', 1);
+
+  renderDash();
+  renderAthletes();
+}
+initApp();
+
+/*
+  {id:1,name:'Matías González',bday:'2000-04-09',weight:72,height:178,category:'Boxeo',startDate:'2024-03-10',notes:'Zurdo. Objetivo: amateur 2025.',colorIdx:0,tier:'A'},
+  {id:2,name:'Sofía Ramírez',bday:'1997-07-14',weight:58,height:165,category:'Muay Thai',startDate:'2024-06-01',notes:'Lesión rodilla resuelta.',colorIdx:1,tier:'B+'},
+  {id:3,name:'Diego Torres',bday:'2004-12-25',weight:80,height:182,category:'MMA',startDate:'2025-01-15',notes:'',colorIdx:2,tier:'B'},
+]);*/
+let logs = [];//replaced
+/*
+  {id:1,athleteId:1,date:'2025-04-07',type:'sparring',rounds:4,rival:'Bruno',notes:'Buen trabajo en distancia'},
+  {id:2,athleteId:1,date:'2025-04-05',type:'attendance',status:'present'},
+  {id:3,athleteId:2,date:'2025-04-07',type:'attendance',status:'present'},
+  {id:4,athleteId:1,date:'2025-04-03',type:'achievement',desc:'Primer KO en sparring'},
+  {id:5,athleteId:3,date:'2025-04-06',type:'record',recType:'Sentadilla',recVal:'100 kg'},
+  {id:6,athleteId:2,date:'2025-04-04',type:'sparring',rounds:3,rival:'',notes:'Buen teep'},
+  {id:7,athleteId:1,date:'2025-04-08',type:'attendance',status:'present'},
+  {id:8,athleteId:2,date:'2025-04-08',type:'attendance',status:'present'},
+  {id:9,athleteId:3,date:'2025-04-08',type:'attendance',status:'absent'},
+  {id:10,athleteId:1,date:'2025-04-01',type:'sparring',rounds:5,rival:'Nico',notes:'Buen jab'},
+  {id:11,athleteId:1,date:'2025-03-28',type:'record',recType:'Press banca',recVal:'85 kg'},
+  {id:12,athleteId:2,date:'2025-04-02',type:'record',recType:'Peso muerto',recVal:'110 kg'},
+]);*/
+let nAid = 1, nLid = 1,curProfile=null,selNewTier='B',newPhotoData=null,sortDir=1;
+
+function toggleSortDir(){
+  sortDir*=-1;
+  document.getElementById('sortDirBtn').textContent=sortDir===1?'↓ Mayor primero':'↑ Menor primero';
+  renderAthletes();
+}
+function resetFilters(){
+  document.getElementById('filterSort').value='name';
+  document.getElementById('filterTier').value='';
+  document.getElementById('filterStatus').value='';
+  sortDir=1;
+  document.getElementById('sortDirBtn').textContent='↓ Mayor primero';
+  renderAthletes();
+}
+
+async function save(){await ss('mg_athletes',athletes);await ss('mg_logs',logs);await ss('mg_naid',nAid);await ss('mg_nlid',nLid);}
+function ini(n){return n.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();}
+function ac(i){return AVCOLS[i%AVCOLS.length];}
+function ti(t){return TIERS.find(x=>x.label===t)||TIERS[4];}
+function fd(d){if(!d)return'';const[y,m,dd]=d.split('-');return`${dd}/${m}/${y}`;}
+function bdayToday(b){if(!b)return false;const t=new Date();const[,m,d]=b.split('-');return+m===t.getMonth()+1&&+d===t.getDate();}
+function bdaySoon(b,days=7){if(!b)return false;const today=new Date();today.setHours(0,0,0,0);const[,m,d]=b.split('-');for(let i=1;i<=days;i++){const t=new Date(today);t.setDate(t.getDate()+i);if(+m===t.getMonth()+1&&+d===t.getDate())return i;}return false;}
+function getAge(b){if(!b)return null;const[y,m,d]=b.split('-').map(Number);const t=new Date();let a=t.getFullYear()-y;if(t.getMonth()+1<m||(t.getMonth()+1===m&&t.getDate()<d))a--;return a;}
+
+function avatarHTML(a, sizeClass){
+  const c=ac(a.colorIdx||0);
+  const photo=gs('mg_photo_'+a.id,null);
+  if(photo) return `<div class="avatar ${sizeClass}"><img src="${photo}" alt="${a.name}"></div>`;
+  return `<div class="avatar ${sizeClass}" style="background:${c.bg};color:${c.c}">${ini(a.name)}</div>`;
+}
+
+function tierHTML(current,cbName){
+  return TIERS.map(t=>`<button class="tier-opt${t.label===current?' sel':''}" style="${t.label===current?`background:${t.bg};color:${t.color};border-color:${t.border};border-width:2px`:''}" onclick="${cbName}('${t.label}')">${t.label}</button>`).join('');
+}
+
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('open');}
+function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').classList.remove('open');}
+
+function nav(name,btn){
+  closeSidebar();
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+  if(btn)btn.classList.add('active');
+  else{const map={dashboard:0,athletes:1,compare:2,challenges:3,addAthlete:4,logActivity:5};if(map[name]!==undefined)document.querySelectorAll('.nav-item')[map[name]].classList.add('active');}
+  if(name==='dashboard')renderDash();
+  if(name==='athletes')renderAthletes();
+  if(name==='compare')renderCompareSelects();
+  if(name==='challenges')renderChallenges();
+  if(name==='addAthlete'){selNewTier='B';newPhotoData=null;document.getElementById('newTierSelect').innerHTML=tierHTML('B','selNewTierFn');resetNewPhotoBox();}
+  if(name==='logActivity')populateSel();
+  if(name==='profile')renderProfile();
+}
+
+function selNewTierFn(t){selNewTier=t;document.getElementById('newTierSelect').innerHTML=tierHTML(t,'selNewTierFn');}
+function setProfileTier(t){const a=athletes.find(x=>x.id===curProfile);if(!a)return;a.tier=t;save();const info=ti(t);document.getElementById('profileTierBadge').innerHTML=`<span class="tier-badge" style="background:${info.bg};color:${info.color};border-color:${info.border}">${t}</span>`;document.getElementById('profileTierSelect').innerHTML=tierHTML(t,'setProfileTier');}
+
+// Photo handling
+function readFile(file,cb){const r=new FileReader();r.onload=e=>cb(e.target.result);r.readAsDataURL(file);}
+
+function previewNewPhoto(ev){
+  const file=ev.target.files[0];if(!file)return;
+  readFile(file,data=>{
+    newPhotoData=data;
+    const box=document.getElementById('newPhotoBox');
+    box.innerHTML=`<img src="${data}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+  });
+}
+function resetNewPhotoBox(){
+  document.getElementById('newPhotoBox').innerHTML=`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b4b2a9" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span style="font-size:10px;color:#b4b2a9">Foto</span>`;
+}
+
+function saveProfilePhoto(ev){
+  const file=ev.target.files[0];if(!file)return;
+  readFile(file,data=>{
+    ss('mg_photo_'+curProfile,data);
+    renderProfileAvatar();
+    renderAthletes();
+  });
+}
+function renderProfileAvatar(){
+  const a=athletes.find(x=>x.id===curProfile);if(!a)return;
+  const photo=gs('mg_photo_'+a.id,null);
+  const c=ac(a.colorIdx||0);
+  const av=document.getElementById('profileAvatar');
+  av.style.cssText=`width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:600;background:${c.bg};color:${c.c};overflow:hidden;flex-shrink:0`;
+  av.innerHTML=photo?`<img src="${photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:`${ini(a.name)}`;
+}
+
+// Edit modal
+function openEditModal(){
+  const a=athletes.find(x=>x.id===curProfile);if(!a)return;
+  document.getElementById('editName').value=a.name;
+  document.getElementById('editBday').value=a.bday||'';
+  document.getElementById('editCategory').value=a.category||'';
+  document.getElementById('editWeight').value=a.weight||'';
+  document.getElementById('editHeight').value=a.height||'';
+  document.getElementById('editStartDate').value=a.startDate||'';
+  document.getElementById('editQuotaDate').value=a.quotaDate||'';
+  document.getElementById('editPlan').value=a.plan||'';
+  document.getElementById('editNotes').value=a.notes||'';
+  const photo=gs('mg_photo_'+a.id,null);
+  const box=document.getElementById('editPhotoBox');
+  const c=ac(a.colorIdx||0);
+  box.innerHTML=photo
+    ?`<img src="${photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`
+    :`<div style="width:100%;height:100%;border-radius:50%;background:${c.bg};color:${c.c};display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:600">${ini(a.name)}</div>`;
+  document.getElementById('editMsg').innerHTML='';
+  document.getElementById('editModal').classList.add('open');
+}
+function closeEditModal(){document.getElementById('editModal').classList.remove('open');}
+
+function previewEditPhoto(ev){
+  const file=ev.target.files[0];if(!file)return;
+  readFile(file,data=>{
+    ss('mg_photo_'+curProfile,data);
+    document.getElementById('editPhotoBox').innerHTML=`<img src="${data}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+    renderProfileAvatar();
+    renderAthletes();
+  });
+}
+
+function saveEditAthlete(){
+  const a=athletes.find(x=>x.id===curProfile);if(!a)return;
+  const name=document.getElementById('editName').value.trim();
+  if(!name){document.getElementById('editMsg').innerHTML='<div class="alert alert-err">El nombre es obligatorio.</div>';return;}
+  a.name=name;
+  a.bday=document.getElementById('editBday').value;
+  a.category=document.getElementById('editCategory').value;
+  a.weight=parseFloat(document.getElementById('editWeight').value)||null;
+  a.height=parseFloat(document.getElementById('editHeight').value)||null;
+  a.startDate=document.getElementById('editStartDate').value;
+  a.quotaDate=document.getElementById('editQuotaDate').value||null;
+  a.plan=document.getElementById('editPlan').value||null;
+  a.notes=document.getElementById('editNotes').value;
+  save();
+  closeEditModal();
+  renderProfile();
+  renderAthletes();
+}
+
+function deleteAthlete(){
+  if(!confirm('¿Seguro que querés eliminar este alumno? Se van a borrar también todos sus registros.'))return;
+  logs=logs.filter(l=>l.athleteId!==curProfile);
+  try{localStorage.removeItem('mg_photo_'+curProfile);}catch(e){}
+  athletes=athletes.filter(a=>a.id!==curProfile);
+  save();
+  closeEditModal();
+  nav('athletes',null);
+}
+
+function toggleAthleteStatus(){
+  const a=athletes.find(x=>x.id===curProfile);if(!a)return;
+  a.active=a.active===false?true:false;
+  save();
+  renderProfile();
+  renderAthletes();
+}
+
+function checkBdays(){
+  const t=athletes.filter(a=>bdayToday(a.bday));
+  const s=athletes.filter(a=>!bdayToday(a.bday)&&bdaySoon(a.bday));
+  let h='';
+  t.forEach(a=>{h+=`<div class="bday-banner bday-today"><div style="width:36px;height:36px;border-radius:50%;background:#fac775;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#633806" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div><div style="font-size:14px;font-weight:600;color:#412402">Hoy es el cumple de ${a.name}!</div><div style="font-size:12px;color:#633806;margin-top:2px">Cumple ${(getAge(a.bday)||0)+1} años hoy</div></div></div>`;});
+  s.forEach(a=>{const days=bdaySoon(a.bday);h+=`<div class="bday-banner bday-soon"><div style="width:36px;height:36px;border-radius:50%;background:#d3d1c7;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#444441" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div><div style="font-size:14px;font-weight:600;color:#2c2c2a">Cumple de ${a.name} en ${days} ${days===1?'día':'días'}</div><div style="font-size:12px;color:#5f5e5a;margin-top:2px">Va a cumplir ${(getAge(a.bday)||0)+1} años</div></div></div>`;});
+  document.getElementById('bdayAlert').innerHTML=h;
+}
+
+function renderDash(){
+  const rounds=logs.filter(l=>l.type==='sparring').reduce((s,l)=>s+(l.rounds||0),0);
+  const att=logs.filter(l=>l.type==='attendance'&&l.status==='present').length;
+  const ach=logs.filter(l=>l.type==='achievement').length;
+  const activeCount=athletes.filter(a=>a.active!==false).length;
+  document.getElementById('globalMetrics').innerHTML=`
+    <div class="metric">
+      <div class="metric-val">${athletes.length}</div>
+      <div class="metric-lbl">alumnos</div>
+      <div style="font-size:11px;color:#1D9E75;font-weight:600;margin-top:4px">● ${activeCount} activos</div>
+    </div>
+    <div class="metric"><div class="metric-val">${rounds}</div><div class="metric-lbl">rounds totales</div></div>
+    <div class="metric"><div class="metric-val">${att}</div><div class="metric-lbl">asistencias</div></div>
+    <div class="metric"><div class="metric-val">${ach}</div><div class="metric-lbl">logros</div></div>`;
+  const recent=[...logs].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,8);
+  const c=document.getElementById('recentActivity');
+  if(!recent.length){c.innerHTML='<div class="empty">Sin registros aún.</div>';return;}
+  c.innerHTML=recent.map(l=>{
+    const a=athletes.find(x=>x.id===l.athleteId);const an=a?a.name:'Alumno eliminado';
+    let badge='';
+    if(l.type==='attendance')badge=`<span class="badge ${l.status==='present'?'badge-green':'badge-red'}">${l.status==='present'?'Presente':'Ausente'}</span>`;
+    if(l.type==='sparring')badge=`<span class="badge badge-purple">${l.rounds} rounds${l.rival?' — vs '+l.rival:''}</span>`;
+    if(l.type==='achievement')badge=`<span class="badge badge-amber">Logro: ${l.desc}</span>`;
+    if(l.type==='record')badge=`<span class="badge badge-green">${l.recType}: ${l.recVal}</span>`;
+    return`<div class="log-item"><div><div class="log-main">${an}</div><div style="margin-top:4px">${badge}</div></div><div class="log-date">${fd(l.date)}</div></div>`;
+  }).join('');
+}
+
+function renderAthletes(){
+  const g=document.getElementById('athleteGrid');
+  if(!athletes.length){g.innerHTML='<div class="empty" style="grid-column:1/-1">No hay alumnos cargados.</div>';return;}
+  const sortBy=document.getElementById('filterSort')?document.getElementById('filterSort').value:'name';
+  const tierFilter=document.getElementById('filterTier')?document.getElementById('filterTier').value:'';
+  const statusFilter=document.getElementById('filterStatus')?document.getElementById('filterStatus').value:'';
+
+  const getVal=(a)=>{
+    if(sortBy==='tier') return TIER_RANK[a.tier]??4;
+    if(sortBy==='score') return athleteScore(a.id)??-1;
+    if(sortBy==='rounds')return logs.filter(l=>l.athleteId===a.id&&l.type==='sparring').reduce((s,l)=>s+(l.rounds||0),0);
+    if(sortBy==='attendance')return logs.filter(l=>l.athleteId===a.id&&l.type==='attendance'&&l.status==='present').length;
+    if(sortBy==='achievements')return logs.filter(l=>l.athleteId===a.id&&l.type==='achievement').length;
+    return a.name.toLowerCase();
+  };
+
+  let list=[...athletes];
+  if(tierFilter)list=list.filter(a=>a.tier===tierFilter);
+  if(statusFilter)list=list.filter(a=>(statusFilter==='active'?(a.active!==false):(a.active===false)));
+  list.sort((a,b)=>{
+    const va=getVal(a),vb=getVal(b);
+    if(sortBy==='name') return (va<vb?-1:va>vb?1:0)*sortDir;
+    return (vb-va)*sortDir*-1;
+  });
+
+  const fc=document.getElementById('filterCount');
+  if(fc)fc.textContent=(tierFilter||sortBy!=='name'||statusFilter)?`${list.length} de ${athletes.length} alumnos`:'';
+
+  if(!list.length){g.innerHTML='<div class="empty" style="grid-column:1/-1">No hay alumnos con ese filtro.</div>';return;}
+  g.innerHTML=list.map(a=>{
+    const info=ti(a.tier);
+    const rounds=logs.filter(l=>l.athleteId===a.id&&l.type==='sparring').reduce((s,l)=>s+(l.rounds||0),0);
+    const att=logs.filter(l=>l.athleteId===a.id&&l.type==='attendance'&&l.status==='present').length;
+    const ach=logs.filter(l=>l.athleteId===a.id&&l.type==='achievement').length;
+    const sb=document.getElementById('filterSort')?document.getElementById('filterSort').value:'name';
+    const isActive=a.active!==false;
+    const score=athleteScore(a.id);
+    // Quota warning
+    let quotaBadge='';
+    if(a.quotaDate){
+      const today=new Date(); today.setHours(0,0,0,0);
+      const qd=new Date(a.quotaDate); qd.setHours(0,0,0,0);
+      const diff=Math.ceil((qd-today)/(1000*60*60*24));
+      if(diff<0) quotaBadge=`<span class="badge badge-red" style="font-size:10px">Cuota vencida</span>`;
+      else if(diff<=7) quotaBadge=`<span class="badge badge-amber" style="font-size:10px">Vence en ${diff}d</span>`;
+    }
+    return`<div class="athlete-card" onclick="openProfile(${a.id})">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+        ${avatarHTML(a,'avatar-md')}
+        <div style="display:flex;align-items:center;gap:5px">
+          ${score!==null?`<span style="font-size:11px;font-weight:700;color:#534AB7;background:#eeedfe;padding:2px 6px;border-radius:5px">${score}</span>`:''}
+          <span class="tier-badge" style="background:${info.bg};color:${info.color};border-color:${info.border}">${a.tier||'—'}</span>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">
+        <span style="width:8px;height:8px;border-radius:50%;background:${isActive?'#1D9E75':'#E24B4A'};flex-shrink:0;display:inline-block"></span>
+        <span style="font-size:15px;font-weight:600;color:#1a1a1a">${a.name}${bdayToday(a.bday)?' 🎂':''}</span>
+        ${(()=>{const ch=getChallenge(a.id);const t=ch?ch.thresholds||0:0;return t>0?`<span style="font-size:13px;font-weight:700;color:#534AB7">◆${t}</span>`:''})()}
+      </div>
+      <div style="font-size:12px;color:#888780;margin-top:2px">${a.category||''}${a.plan?` · ${PLAN_LABELS[a.plan]||a.plan}`:''}</div>
+      <div style="margin-top:8px;display:flex;gap:5px;flex-wrap:wrap">
+        ${quotaBadge}
+      </div>
+      <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+        <span class="badge ${sb==='rounds'?'badge-purple':''}" style="${sb!=='rounds'?'background:#f1efe8;color:#888780':''}">${rounds} rounds</span>
+        <span class="badge ${sb==='attendance'?'badge-green':''}" style="${sb!=='attendance'?'background:#f1efe8;color:#888780':''}">${att} asist</span>
+        <span class="badge ${sb==='achievements'?'badge-amber':''}" style="${sb!=='achievements'?'background:#f1efe8;color:#888780':''}">${ach} logros</span>
+      </div>
+      ${miniRadarSVG(a.id)}
+    </div>`;
+  }).join('');
+}
+
+function populateSel(){
+  document.getElementById('logAthlete').innerHTML='<option value="">Seleccionar...</option>'+athletes.map(a=>`<option value="${a.id}">${a.name}</option>`).join('');
+  document.getElementById('logDate').value=new Date().toISOString().split('T')[0];
+}
+
+function toggleLogFields(){
+  const t=document.getElementById('logType').value;
+  ['Attendance','Sparring','Achievement','Record'].forEach(f=>document.getElementById('logField'+f).style.display=t===f.toLowerCase()?'block':'none');
+}
+
+function saveLog(){
+  const aId=parseInt(document.getElementById('logAthlete').value);
+  const date=document.getElementById('logDate').value;
+  const type=document.getElementById('logType').value;
+  const msg=document.getElementById('logMsg');
+  if(!aId||!date){msg.innerHTML='<div class="alert alert-err">Completá alumno y fecha.</div>';return;}
+  const e={id:nLid++,athleteId:aId,date,type};
+  if(type==='attendance')e.status=document.getElementById('logAttStatus').value;
+  if(type==='sparring'){e.rounds=parseInt(document.getElementById('logRounds').value)||1;e.rival=document.getElementById('logRival').value;e.notes=document.getElementById('logSparNotes').value;}
+  if(type==='achievement')e.desc=document.getElementById('logAchDesc').value;
+  if(type==='record'){e.recType=document.getElementById('logRecType').value;e.recVal=document.getElementById('logRecVal').value;}
+  logs.push(e);save();
+  msg.innerHTML='<div class="alert alert-ok">Registro guardado correctamente.</div>';
+  setTimeout(()=>msg.innerHTML='',2500);
+}
+
+function addAthlete(){
+  const name=document.getElementById('newName').value.trim();
+  const msg=document.getElementById('addAthleteMsg');
+  if(!name){msg.innerHTML='<div class="alert alert-err">El nombre es obligatorio.</div>';return;}
+  const newId=nAid++;
+  athletes.push({id:newId,name,bday:document.getElementById('newBday').value,weight:parseFloat(document.getElementById('newWeight').value)||null,height:parseFloat(document.getElementById('newHeight').value)||null,category:document.getElementById('newCategory').value,startDate:document.getElementById('newStartDate').value,quotaDate:document.getElementById('newQuotaDate').value||null,plan:document.getElementById('newPlan').value||null,notes:document.getElementById('newNotes').value,colorIdx:athletes.length%AVCOLS.length,tier:selNewTier,active:true});
+  if(newPhotoData)ss('mg_photo_'+newId,newPhotoData);
+  save();
+  ['newName','newBday','newWeight','newHeight','newCategory','newStartDate','newNotes'].forEach(id=>document.getElementById(id).value='');
+  selNewTier='B';newPhotoData=null;
+  document.getElementById('newTierSelect').innerHTML=tierHTML('B','selNewTierFn');
+  resetNewPhotoBox();
+  msg.innerHTML='<div class="alert alert-ok">Alumno agregado correctamente.</div>';
+  setTimeout(()=>msg.innerHTML='',2500);
+}
+
+function deleteAchievement(id){
+  if(!confirm('¿Eliminar este logro?'))return;
+  logs=logs.filter(l=>l.id!==id);
+  save();
+  renderProfile();
+}
+
+function deleteSparring(id){
+  if(!confirm('¿Eliminar este sparring?'))return;
+  logs=logs.filter(l=>l.id!==id);
+  save();
+  renderProfile();
+}
+
+function openProfile(id){curProfile=id;nav('profile',null);}
+
+function switchTab(ev,name){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  ev.target.classList.add('active');
+}
+
+function renderProfile(){
+  const a=athletes.find(x=>x.id===curProfile);if(!a)return;
+  const info=ti(a.tier);
+  const aLogs=logs.filter(l=>l.athleteId===a.id);
+  const sparrings=aLogs.filter(l=>l.type==='sparring');
+  const totalRounds=sparrings.reduce((s,l)=>s+(l.rounds||0),0);
+  const attendances=aLogs.filter(l=>l.type==='attendance');
+  const presents=attendances.filter(l=>l.status==='present');
+  const achievements=aLogs.filter(l=>l.type==='achievement');
+  const records=aLogs.filter(l=>l.type==='record');
+  const age=getAge(a.bday);
+
+  renderProfileAvatar();
+  const isActive=a.active!==false;
+  const score=athleteScore(a.id);
+  document.getElementById('profileName').textContent=a.name;
+  document.getElementById('profileStatusDot').innerHTML=`<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${isActive?'#1D9E75':'#E24B4A'}" title="${isActive?'Activo':'Inactivo'}"></span>`;
+  document.getElementById('profileTierBadge').innerHTML=`<span class="tier-badge" style="background:${info.bg};color:${info.color};border-color:${info.border};font-size:13px;padding:4px 12px">${a.tier||'—'}</span>`;
+  document.getElementById('profileScoreBadge').innerHTML=score!==null?`<span style="font-size:13px;font-weight:700;color:#534AB7;background:#eeedfe;padding:3px 10px;border-radius:6px">${score} pts</span>`:'';
+  document.getElementById('profileBdayBadge').innerHTML=bdayToday(a.bday)?`<span class="badge badge-amber">Cumple hoy!</span>`:'';
+  document.getElementById('statusToggleBtn').textContent=isActive?'● Activo':'○ Inactivo';
+  document.getElementById('statusToggleBtn').style.color=isActive?'#1D9E75':'#E24B4A';
+
+  // Quota info in meta
+  let quotaInfo='';
+  if(a.quotaDate){
+    const today=new Date();today.setHours(0,0,0,0);
+    const qd=new Date(a.quotaDate);qd.setHours(0,0,0,0);
+    const diff=Math.ceil((qd-today)/(1000*60*60*24));
+    if(diff<0) quotaInfo=` · Cuota vencida hace ${Math.abs(diff)}d`;
+    else if(diff===0) quotaInfo=' · Cuota vence hoy';
+    else quotaInfo=` · Cuota vence en ${diff}d`;
+  }
+  document.getElementById('profileMeta').textContent=[a.category,a.plan?PLAN_LABELS[a.plan]:null,age?age+' años':null,a.bday?'Nac. '+fd(a.bday):null,a.startDate?'Desde '+fd(a.startDate):null].filter(Boolean).join(' · ')+quotaInfo;
+  document.getElementById('profileTierSelect').innerHTML=tierHTML(a.tier,'setProfileTier');
+
+  document.getElementById('profileMetrics').innerHTML=`
+    <div class="metric"><div class="metric-val">${totalRounds}</div><div class="metric-lbl">rounds sparring</div></div>
+    <div class="metric"><div class="metric-val">${presents.length}</div><div class="metric-lbl">asistencias</div></div>
+    <div class="metric"><div class="metric-val">${achievements.length}</div><div class="metric-lbl">logros</div></div>`;
+
+  document.getElementById('tab-info').innerHTML=`<div class="card">${[['Peso',a.weight?a.weight+' kg':'-'],['Altura',a.height?a.height+' cm':'-'],['Edad',age?age+' años':'-'],['Fecha de nac.',a.bday?fd(a.bday):'-'],['Disciplina',a.category||'-'],['Plan',a.plan?PLAN_LABELS[a.plan]:'-'],['Venc. cuota',a.quotaDate?fd(a.quotaDate):'-'],['Inicio',a.startDate?fd(a.startDate):'-'],['Notas',a.notes||'-']].map(([k,v])=>`<div class="rec-row"><span style="color:#888780">${k}</span><span style="font-weight:500;text-align:right;max-width:60%">${v}</span></div>`).join('')}</div>`;
+
+  const maxR=Math.max(...sparrings.map(l=>l.rounds||0),1);
+  document.getElementById('tab-sparring').innerHTML=sparrings.length
+    ?`<div class="card" style="background:#f5f4f0;border:none;margin-bottom:1rem"><div style="font-size:13px;color:#888780">Total acumulado</div><div style="font-size:32px;font-weight:700;color:#1a1a1a;line-height:1.1">${totalRounds}</div><div style="font-size:13px;color:#888780">rounds en ${sparrings.length} sesiones</div></div>`
+    +sparrings.sort((a,b)=>b.date.localeCompare(a.date)).map(l=>`<div class="card-sm"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px"><span style="font-size:14px;font-weight:600">${l.rounds} rounds${l.rival?' — vs '+l.rival:''}</span><div style="display:flex;align-items:center;gap:8px;flex-shrink:0"><span class="log-date">${fd(l.date)}</span><button onclick="deleteSparring(${l.id})" style="background:none;border:none;cursor:pointer;color:#d3d1c7;font-size:16px;line-height:1;padding:0" title="Eliminar">✕</button></div></div><div class="rounds-bar"><div class="rounds-fill" style="width:${Math.round(l.rounds/maxR*100)}%"></div></div>${l.notes?`<div style="font-size:12px;color:#888780;margin-top:6px">${l.notes}</div>`:''}</div>`).join('')
+    :'<div class="empty">Sin sparrings registrados.</div>';
+
+  const last28=[];for(let i=27;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);last28.push(d.toISOString().split('T')[0]);}
+  const rate=attendances.length?Math.round(presents.length/attendances.length*100):0;
+  document.getElementById('tab-attendance').innerHTML=`<div class="card"><div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font-size:13px;color:#888780">Últimos 28 días</span><span style="font-size:13px;font-weight:600">${rate}% presencia</span></div><div class="att-grid">${last28.map(d=>{const l=attendances.find(x=>x.date===d);return`<div class="att-dot${l?(l.status==='present'?' present':' absent'):''}" title="${fd(d)}"></div>`;}).join('')}</div></div>`
+  +([...attendances].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,10).map(l=>`<div class="log-item"><span class="log-main">${l.status==='present'?'Presente':'Ausente'}</span><span class="log-date">${fd(l.date)}</span></div>`).join('')||'<div class="empty">Sin registros.</div>');
+
+  document.getElementById('tab-achievements').innerHTML=achievements.length
+    ?achievements.sort((a,b)=>b.date.localeCompare(a.date)).map(l=>`<div class="card-sm"><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:14px;font-weight:500">${l.desc}</span><div style="display:flex;align-items:center;gap:8px;flex-shrink:0"><span class="log-date">${fd(l.date)}</span><button onclick="deleteAchievement(${l.id})" style="background:none;border:none;cursor:pointer;color:#d3d1c7;font-size:16px;line-height:1;padding:0" title="Eliminar">✕</button></div></div></div>`).join('')
+    :'<div class="empty">Sin logros cargados.</div>';
+
+  if(records.length){
+    const byEx={};records.forEach(l=>{if(!byEx[l.recType])byEx[l.recType]=[];byEx[l.recType].push(l);});
+    document.getElementById('tab-records').innerHTML=Object.entries(byEx).map(([ex,recs])=>{
+      const sorted=recs.sort((a,b)=>b.date.localeCompare(a.date));
+      return`<div class="card"><div style="font-size:15px;font-weight:600;margin-bottom:8px">${ex}</div>${sorted.map((r,i)=>`<div class="rec-row"><span style="${i===0?'color:#1a1a1a;font-weight:500':'color:#888780'}">${i===0?'Mejor marca':fd(r.date)}</span><span style="${i===0?'color:#085041;font-weight:700':'color:#888780'}">${r.recVal}${i===0?' ✓':''}</span></div>`).join('')}</div>`;
+    }).join('');
+  }else{document.getElementById('tab-records').innerHTML='<div class="empty">Sin récords registrados.</div>';}
+
+  // Racha de asistencia
+  const sortedAtt=[...presents].sort((a,b)=>a.date.localeCompare(b.date));
+  let curStreak=0,bestStreak=0,tmp=0;
+  const today2=new Date().toISOString().split('T')[0];
+  for(let i=0;i<sortedAtt.length;i++){
+    if(i===0){tmp=1;}else{
+      const prev=new Date(sortedAtt[i-1].date),cur=new Date(sortedAtt[i].date);
+      const diff=(cur-prev)/(1000*60*60*24);
+      tmp=diff<=7?tmp+1:1;
+    }
+    if(tmp>bestStreak)bestStreak=tmp;
+  }
+  if(sortedAtt.length){
+    const lastDate=new Date(sortedAtt[sortedAtt.length-1].date);
+    const daysSince=(new Date()-lastDate)/(1000*60*60*24);
+    curStreak=daysSince<=14?tmp:0;
+  }
+
+  // Progress tab
+  const snapshots=gs('mg_snap_'+a.id,[]);
+  const STATS=['Potencia','Velocidad','Técnica','Defensa','Fuerza','Cardio'];
+  const latestSnap=snapshots.length?snapshots[snapshots.length-1]:null;
+  const firstSnap=snapshots.length>1?snapshots[0]:null;
+
+  let radarSVG='';
+  if(latestSnap){
+    const cx=160,cy=155,r=110,n=STATS.length;
+    const pts=STATS.map((s,i)=>{
+      const angle=(Math.PI*2*i/n)-Math.PI/2;
+      const val=(latestSnap[s]||0)/10;
+      return[cx+r*val*Math.cos(angle),cy+r*val*Math.sin(angle)];
+    });
+    const firstPts=firstSnap?STATS.map((s,i)=>{
+      const angle=(Math.PI*2*i/n)-Math.PI/2;
+      const val=(firstSnap[s]||0)/10;
+      return[cx+r*val*Math.cos(angle),cy+r*val*Math.sin(angle)];
+    }):null;
+    const gridLines=[2,4,6,8,10].map(g=>STATS.map((_,i)=>{
+      const angle=(Math.PI*2*i/n)-Math.PI/2;
+      const rv=r*(g/10);
+      return[cx+rv*Math.cos(angle),cy+rv*Math.sin(angle)];
+    }).map((p,i)=>(i===0?'M':'L')+p[0].toFixed(1)+','+p[1].toFixed(1)+'').join(' ')+' Z').join('');
+    const axisLines=STATS.map((_,i)=>{
+      const angle=(Math.PI*2*i/n)-Math.PI/2;
+      return`<line x1="${cx}" y1="${cy}" x2="${(cx+r*Math.cos(angle)).toFixed(1)}" y2="${(cy+r*Math.sin(angle)).toFixed(1)}" stroke="#e8e6e0" stroke-width="1"/>`;
+    }).join('');
+    const labels=STATS.map((s,i)=>{
+      const angle=(Math.PI*2*i/n)-Math.PI/2;
+      const lx=(cx+(r+22)*Math.cos(angle)).toFixed(1);
+      const ly=(cy+(r+22)*Math.sin(angle)).toFixed(1);
+      return`<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" font-size="11" fill="#888780" font-family="-apple-system,sans-serif">${s}</text>`;
+    }).join('');
+    const polyMain=pts.map((p,i)=>(i===0?'M':'L')+p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')+' Z';
+    const polyFirst=firstPts?firstPts.map((p,i)=>(i===0?'M':'L')+p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')+' Z':'';
+    radarSVG=`<svg viewBox="0 0 320 310" style="width:100%;max-width:340px;display:block;margin:0 auto">
+      <path d="${gridLines}" fill="none" stroke="#f0ede8" stroke-width="1"/>
+      ${axisLines}
+      ${firstPts?`<path d="${polyFirst}" fill="rgba(180,178,169,0.15)" stroke="#b4b2a9" stroke-width="1.5" stroke-dasharray="4,3"/>`:''}
+      <path d="${polyMain}" fill="rgba(83,74,183,0.15)" stroke="#534AB7" stroke-width="2"/>
+      ${pts.map(p=>`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3" fill="#534AB7"/>`).join('')}
+      ${labels}
+      ${firstPts?`<g><rect x="10" y="280" width="10" height="3" fill="#b4b2a9" rx="1"/><text x="24" y="283" font-size="10" fill="#888780" font-family="-apple-system,sans-serif" dominant-baseline="middle">Primer registro</text><rect x="120" y="280" width="10" height="3" fill="#534AB7" rx="1"/><text x="134" y="283" font-size="10" fill="#888780" font-family="-apple-system,sans-serif" dominant-baseline="middle">Actual</text></g>`:''}
+    </svg>`;
+  }
+
+  let barHTML='';
+  if(firstSnap&&latestSnap){
+    barHTML=`<div style="margin-top:1rem"><div style="font-size:13px;font-weight:600;margin-bottom:12px;color:#1a1a1a">Primer registro vs. actual</div>`+
+    STATS.map(s=>{
+      const first=firstSnap[s]||0,last=latestSnap[s]||0;
+      const diff=last-first;
+      const diffColor=diff>0?'#085041':diff<0?'#a32d2d':'#888780';
+      return`<div style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+          <span style="font-size:12px;color:#888780">${s}</span>
+          <span style="font-size:12px;font-weight:600;color:${diffColor}">${diff>0?'+':''}${diff}</span>
+        </div>
+        <div style="display:flex;gap:4px;align-items:center">
+          <div style="flex:1;background:#f0ede8;border-radius:3px;height:6px;overflow:hidden">
+            <div style="width:${first*10}%;height:100%;background:#d3d1c7;border-radius:3px"></div>
+          </div>
+          <div style="flex:1;background:#f0ede8;border-radius:3px;height:6px;overflow:hidden">
+            <div style="width:${last*10}%;height:100%;background:#534AB7;border-radius:3px"></div>
+          </div>
+        </div>
+      </div>`;
+    }).join('')+'</div>';
+  }
+
+  const nowYM=new Date().toISOString().slice(0,7);
+  const hasThisMonth=snapshots.find(s=>s.month===nowYM);
+  document.getElementById('tab-progress').innerHTML=`
+    <div class="card" style="background:#f5f4f0;border:none;margin-bottom:1rem;display:flex;gap:24px;flex-wrap:wrap">
+      <div><div style="font-size:13px;color:#888780">Racha actual</div><div style="font-size:28px;font-weight:700;color:#1a1a1a">${curStreak} <span style="font-size:14px;font-weight:400">clases</span></div></div>
+      <div><div style="font-size:13px;color:#888780">Mejor racha</div><div style="font-size:28px;font-weight:700;color:#1a1a1a">${bestStreak} <span style="font-size:14px;font-weight:400">clases</span></div></div>
+    </div>
+    <div class="card">
+      <div style="font-size:15px;font-weight:600;margin-bottom:4px">Stats del mes — ${nowYM}</div>
+      <div style="font-size:12px;color:#888780;margin-bottom:1rem">Escala del 1 al 10</div>
+      ${STATS.map(s=>`<div style="margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+          <label style="font-size:13px;color:#5f5e5a">${s}</label>
+          <span style="font-size:13px;font-weight:600;color:#1a1a1a" id="sv_${s.replace('/','_')}">${hasThisMonth?(hasThisMonth[s]||0):0}</span>
+        </div>
+        <input type="range" min="0" max="10" step="1" value="${hasThisMonth?(hasThisMonth[s]||0):0}" oninput="document.getElementById('sv_${s.replace('/','_')}').textContent=this.value" id="sr_${s.replace('/','_')}" style="width:100%">
+      </div>`).join('')}
+      <button class="btn btn-dark" style="margin-top:8px" onclick="saveSnapshot(${a.id})">Guardar stats del mes</button>
+      <div id="snapMsg" style="margin-top:8px"></div>
+    </div>
+    ${latestSnap?`<div class="card"><div style="font-size:15px;font-weight:600;margin-bottom:1rem">Radar — ${latestSnap.month}</div>${radarSVG}${barHTML}</div>`:'<div class="empty">Guardá las stats del mes para ver el gráfico.</div>'}
+    ${snapshots.length?`<div class="card"><div style="font-size:14px;font-weight:600;margin-bottom:10px">Historial de snapshots</div>${[...snapshots].reverse().map(s=>`<div class="rec-row"><span style="color:#888780">${s.month}</span><span style="font-size:12px;color:#5f5e5a">${STATS.map(st=>st+': '+s[st]).join(' · ')}</span></div>`).join('')}</div>`:''}  `;
+  renderChallengeTab(a.id);
+}
+
+function saveSnapshot(aid){
+  const STATS=['Potencia','Velocidad','Técnica','Defensa','Fuerza','Cardio'];
+  const nowYM=new Date().toISOString().slice(0,7);
+  let snapshots=gs('mg_snap_'+aid,[]);
+  const snap={month:nowYM};
+  STATS.forEach(s=>snap[s]=parseInt(document.getElementById('sr_'+s.replace('/','_')).value)||0);
+  const idx=snapshots.findIndex(s=>s.month===nowYM);
+  if(idx>=0)snapshots[idx]=snap;else snapshots.push(snap);
+  snapshots.sort((a,b)=>a.month.localeCompare(b.month));
+  ss('mg_snap_'+aid,snapshots);
+  document.getElementById('snapMsg').innerHTML='<div class="alert alert-ok">Stats guardadas.</div>';
+  setTimeout(()=>{document.getElementById('snapMsg').innerHTML='';renderProfile();},1200);
+}
+
+
+// ── COMPARE ──────────────────────────────────────────────────────────────
+function renderCompareSelects(){
+  const opts='<option value="">Seleccionar...</option>'+athletes.map(a=>`<option value="${a.id}">${a.name}</option>`).join('');
+  document.getElementById('compareA').innerHTML=opts;
+  document.getElementById('compareB').innerHTML=opts;
+  document.getElementById('compareResult').innerHTML='';
+}
+
+function renderCompare(){
+  const idA=parseInt(document.getElementById('compareA').value);
+  const idB=parseInt(document.getElementById('compareB').value);
+  const el=document.getElementById('compareResult');
+  if(!idA||!idB||idA===idB){el.innerHTML=idA&&idB&&idA===idB?'<div class="alert alert-err">Seleccioná dos alumnos distintos.</div>':'';return;}
+  const a=athletes.find(x=>x.id===idA);
+  const b=athletes.find(x=>x.id===idB);
+  if(!a||!b)return;
+
+  const STATS=['Potencia','Velocidad','Técnica','Defensa','Fuerza','Cardio'];
+
+  function colStats(aid){
+    const snaps=gs('mg_snap_'+aid,[]);
+    if(!snaps.length) return null;
+    return snaps[snaps.length-1];
+  }
+
+  function fullRadar(aid, color){
+    const snap=colStats(aid);
+    if(!snap) return '<div class="empty">Sin stats</div>';
+    const cx=130,cy=125,r=90,n=STATS.length;
+    const pts=STATS.map((s,i)=>{
+      const angle=(Math.PI*2*i/n)-Math.PI/2;
+      const val=(snap[s]||0)/10;
+      return[cx+r*val*Math.cos(angle),cy+r*val*Math.sin(angle)];
+    });
+    const gridLines=[2,4,6,8,10].map(g=>STATS.map((_,i)=>{
+      const angle=(Math.PI*2*i/n)-Math.PI/2;
+      const rv=r*(g/10);
+      return[cx+rv*Math.cos(angle),cy+rv*Math.sin(angle)];
+    }).map((p,i)=>(i===0?'M':'L')+p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')+' Z').join('');
+    const axisLines=STATS.map((_,i)=>{
+      const angle=(Math.PI*2*i/n)-Math.PI/2;
+      return`<line x1="${cx}" y1="${cy}" x2="${(cx+r*Math.cos(angle)).toFixed(1)}" y2="${(cy+r*Math.sin(angle)).toFixed(1)}" stroke="#e8e6e0" stroke-width="1"/>`;
+    }).join('');
+    const labels=STATS.map((s,i)=>{
+      const angle=(Math.PI*2*i/n)-Math.PI/2;
+      const lx=(cx+(r+20)*Math.cos(angle)).toFixed(1);
+      const ly=(cy+(r+20)*Math.sin(angle)).toFixed(1);
+      return`<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" font-size="10" fill="#888780" font-family="-apple-system,sans-serif">${s}</text>`;
+    }).join('');
+    const poly=pts.map((p,i)=>(i===0?'M':'L')+p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')+' Z';
+    return`<svg viewBox="0 0 260 250" style="width:100%;max-width:240px;display:block;margin:0 auto">
+      <path d="${gridLines}" fill="none" stroke="#f0ede8" stroke-width="1"/>
+      ${axisLines}
+      <path d="${poly}" fill="${color}22" stroke="${color}" stroke-width="2"/>
+      ${pts.map(p=>`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3" fill="${color}"/>`).join('')}
+      ${labels}
+    </svg>`;
+  }
+
+  function col(athlete, color){
+    const infoT=ti(athlete.tier);
+    const aLogs=logs.filter(l=>l.athleteId===athlete.id);
+    const rounds=aLogs.filter(l=>l.type==='sparring').reduce((s,l)=>s+(l.rounds||0),0);
+    const achs=aLogs.filter(l=>l.type==='achievement').length;
+    const score=athleteScore(athlete.id);
+    const snap=colStats(athlete.id);
+    const isActive=athlete.active!==false;
+    return`<div style="flex:1;min-width:220px">
+      <div style="text-align:center;margin-bottom:1rem">
+        ${avatarHTML(athlete,'avatar-lg')}
+        <div style="margin-top:10px;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap">
+          <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${isActive?'#1D9E75':'#E24B4A'}"></span>
+          <span style="font-size:18px;font-weight:700">${athlete.name}</span>
+        </div>
+        <div style="font-size:13px;color:#888780;margin-top:3px">${athlete.category||'—'}</div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px;flex-wrap:wrap">
+          <span class="tier-badge" style="background:${infoT.bg};color:${infoT.color};border-color:${infoT.border}">${athlete.tier||'—'}</span>
+          ${score!==null?`<span style="font-size:13px;font-weight:700;color:${color};background:${color}18;padding:3px 10px;border-radius:6px">${score} pts</span>`:'<span style="font-size:12px;color:#b4b2a9">Sin puntaje</span>'}
+        </div>
+      </div>
+      <div style="margin-bottom:1rem">
+        ${fullRadar(athlete.id, color)}
+      </div>
+      ${snap?STATS.map(s=>`<div style="margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+          <span style="font-size:12px;color:#888780">${s}</span>
+          <span style="font-size:12px;font-weight:600;color:#1a1a1a">${snap[s]||0}/10</span>
+        </div>
+        <div style="background:#f0ede8;border-radius:3px;height:5px;overflow:hidden">
+          <div style="width:${(snap[s]||0)*10}%;height:100%;background:${color};border-radius:3px"></div>
+        </div>
+      </div>`).join(''):'<div class="empty" style="padding:1rem 0">Sin stats del mes cargadas.</div>'}
+      <div style="border-top:1px solid #f0ede8;padding-top:12px;margin-top:8px">
+        <div class="rec-row"><span style="color:#888780">Rounds sparring</span><span style="font-weight:600">${rounds}</span></div>
+        <div class="rec-row"><span style="color:#888780">Logros</span><span style="font-weight:600">${achs}</span></div>
+      </div>
+    </div>`;
+  }
+
+  el.innerHTML=`<div class="card">
+    <div style="display:flex;gap:2rem;flex-wrap:wrap">
+      ${col(a,'#534AB7')}
+      <div style="width:1px;background:#f0ede8;flex-shrink:0"></div>
+      ${col(b,'#1D9E75')}
+    </div>
+  </div>`;
+}
+
+// ── MINI RADAR (for athlete cards) ────────────────────────────────────────
+function miniRadarSVG(aid){
+  const STATS=['Potencia','Velocidad','Técnica','Defensa','Fuerza','Cardio'];
+  const snapshots=gs('mg_snap_'+aid,[]);
+  if(!snapshots.length) return '';
+  const snap=snapshots[snapshots.length-1];
+  const cx=60,cy=58,r=42,n=STATS.length;
+  const pts=STATS.map((s,i)=>{
+    const angle=(Math.PI*2*i/n)-Math.PI/2;
+    const val=(snap[s]||0)/10;
+    return[cx+r*val*Math.cos(angle),cy+r*val*Math.sin(angle)];
+  });
+  const gridLines=[5,10].map(g=>STATS.map((_,i)=>{
+    const angle=(Math.PI*2*i/n)-Math.PI/2;
+    const rv=r*(g/10);
+    return[cx+rv*Math.cos(angle),cy+rv*Math.sin(angle)];
+  }).map((p,i)=>(i===0?'M':'L')+p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')+' Z').join('');
+  const axisLines=STATS.map((_,i)=>{
+    const angle=(Math.PI*2*i/n)-Math.PI/2;
+    return`<line x1="${cx}" y1="${cy}" x2="${(cx+r*Math.cos(angle)).toFixed(1)}" y2="${(cy+r*Math.sin(angle)).toFixed(1)}" stroke="#e8e6e0" stroke-width="1"/>`;
+  }).join('');
+  const poly=pts.map((p,i)=>(i===0?'M':'L')+p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')+' Z';
+  return `<svg class="mini-radar" viewBox="0 0 120 116" width="90" height="87">
+    <path d="${gridLines}" fill="none" stroke="#f0ede8" stroke-width="1"/>
+    ${axisLines}
+    <path d="${poly}" fill="rgba(83,74,183,0.18)" stroke="#534AB7" stroke-width="1.5"/>
+    ${pts.map(p=>`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="2" fill="#534AB7"/>`).join('')}
+  </svg>`;
+}
+
+// ── CHALLENGES (Retos mensuales) ──────────────────────────────────────────
+// Storage key per athlete: mg_challenge_{id} = { text, startDate, thresholds }
+function getChallenge(aid){ return gs('mg_challenge_'+aid, null); }
+function saveChallenge(aid, obj){ ss('mg_challenge_'+aid, obj); }
+
+function challengeStatus(ch){
+  if(!ch||!ch.text) return 'none';
+  const start=new Date(ch.startDate);
+  const now=new Date();
+  const days=Math.floor((now-start)/(1000*60*60*24));
+  if(days>=30) return 'overdue'; // 30 days passed, awaiting review
+  return 'active';
+}
+
+function challengeDaysLeft(ch){
+  if(!ch) return 0;
+  const start=new Date(ch.startDate);
+  const now=new Date();
+  const days=Math.floor((now-start)/(1000*60*60*24));
+  return Math.max(0, 30-days);
+}
+
+function renderChallengeTab(aid){
+  const a=athletes.find(x=>x.id===aid);
+  if(!a) return;
+  const ch=getChallenge(aid);
+  const status=challengeStatus(ch);
+  let html='';
+
+  // Threshold display
+  const thresholds=ch?ch.thresholds||0:0;
+  const pips=Array.from({length:Math.max(thresholds,5)},(_,i)=>
+    `<span class="threshold-pip${i<thresholds?'':' empty'}"></span>`
+  ).join('');
+  html+=`<div class="card" style="background:#f5f4f0;border:none;margin-bottom:1rem">
+    <div style="font-size:13px;color:#888780;margin-bottom:6px">Umbrales acumulados</div>
+    <div style="font-size:32px;font-weight:700;color:#534AB7;line-height:1">${thresholds}</div>
+    <div style="margin-top:8px">${pips}</div>
+  </div>`;
+
+  if(status==='overdue'){
+    html+=`<div class="challenge-card challenge-overdue">
+      <div style="font-size:11px;color:#E24B4A;font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em">¡30 días cumplidos — revisión pendiente!</div>
+      <div style="font-size:15px;font-weight:600;margin-bottom:1rem">"${ch.text}"</div>
+      <div style="font-size:13px;color:#888780;margin-bottom:1rem">¿El alumno cumplió el reto?</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-dark" onclick="resolveChallenge(${aid},true)">✓ Sí, lo cumplió (+1 umbral)</button>
+        <button class="btn btn-ghost" onclick="resolveChallenge(${aid},false)">✗ No, renovar reto</button>
+      </div>
+    </div>`;
+  } else if(status==='active'){
+    const left=challengeDaysLeft(ch);
+    html+=`<div class="challenge-card challenge-pending">
+      <div style="font-size:11px;color:#EF9F27;font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em">Reto en curso — ${left} días restantes</div>
+      <div style="font-size:15px;font-weight:600;margin-bottom:8px">"${ch.text}"</div>
+      <div style="background:#f0ede8;border-radius:4px;height:6px;margin-bottom:1rem;overflow:hidden">
+        <div style="height:100%;border-radius:4px;background:#EF9F27;width:${Math.round((30-left)/30*100)}%"></div>
+      </div>
+      <div style="font-size:12px;color:#888780">Inicio: ${fd(ch.startDate)}</div>
+      <button class="btn btn-danger" style="margin-top:12px" onclick="clearChallenge(${aid})">Eliminar reto</button>
+    </div>`;
+  } else {
+    html+=`<div class="card" style="border:2px dashed #e8e6e0;background:transparent;text-align:center;padding:2rem;margin-bottom:1rem">
+      <div style="font-size:14px;color:#b4b2a9;margin-bottom:1rem">Sin reto activo</div>
+      <button class="btn btn-dark" onclick="showNewChallengeForm(${aid})">+ Asignar reto del mes</button>
+    </div>`;
+  }
+
+  html+=`<div id="newChallengeForm_${aid}" style="display:none">
+    <div class="card">
+      <div style="font-size:14px;font-weight:600;margin-bottom:12px">Nuevo reto</div>
+      <div class="field" style="margin-bottom:12px">
+        <label>¿Qué querés que mejore este mes?</label>
+        <textarea id="challengeText_${aid}" placeholder="Ej: Mejorar el jab, no bajar la guardia al contraatacar..."></textarea>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-dark" onclick="assignChallenge(${aid})">Guardar reto</button>
+        <button class="btn btn-ghost" onclick="document.getElementById('newChallengeForm_${aid}').style.display='none'">Cancelar</button>
+      </div>
+    </div>
+  </div>`;
+
+  // History
+  const history=ch&&ch.history?ch.history:[];
+  if(history.length){
+    html+=`<div class="card"><div style="font-size:14px;font-weight:600;margin-bottom:10px">Historial de retos</div>
+    ${history.map(h=>`<div class="rec-row">
+      <span style="color:#5f5e5a;max-width:70%">${h.text}</span>
+      <span class="badge ${h.completed?'badge-green':'badge-red'}">${h.completed?'Cumplido':'No cumplido'}</span>
+    </div>`).join('')}
+    </div>`;
+  }
+
+  document.getElementById('tab-challenge').innerHTML=html;
+}
+
+function showNewChallengeForm(aid){
+  document.getElementById('newChallengeForm_'+aid).style.display='block';
+}
+
+function assignChallenge(aid){
+  const text=document.getElementById('challengeText_'+aid).value.trim();
+  if(!text) return;
+  const existing=getChallenge(aid);
+  const thresholds=existing?existing.thresholds||0:0;
+  const history=existing?existing.history||[]:[];
+  saveChallenge(aid,{text,startDate:new Date().toISOString().split('T')[0],thresholds,history});
+  renderChallengeTab(aid);
+}
+
+function resolveChallenge(aid,completed){
+  const ch=getChallenge(aid);
+  if(!ch) return;
+  const newThresholds=completed?(ch.thresholds||0)+1:(ch.thresholds||0);
+  const history=[...(ch.history||[]),{text:ch.text,startDate:ch.startDate,completed}];
+  if(completed){
+    // Award threshold, clear challenge (trainer will set a new one)
+    saveChallenge(aid,{text:'',startDate:'',thresholds:newThresholds,history});
+  } else {
+    // Keep same text, restart the 30-day clock
+    saveChallenge(aid,{text:ch.text,startDate:new Date().toISOString().split('T')[0],thresholds:newThresholds,history});
+  }
+  renderChallengeTab(aid);
+  renderChallenges();
+}
+
+function clearChallenge(aid){
+  if(!confirm('¿Eliminar el reto actual?')) return;
+  const ch=getChallenge(aid);
+  const thresholds=ch?ch.thresholds||0:0;
+  const history=ch?ch.history||[]:[];
+  saveChallenge(aid,{text:'',startDate:'',thresholds,history});
+  renderChallengeTab(aid);
+}
+
+function renderChallenges(){
+  const el=document.getElementById('challengesList');
+  if(!el) return;
+
+  // Check for overdue challenges first (notification)
+  const overdue=athletes.filter(a=>{
+    const ch=getChallenge(a.id);
+    return challengeStatus(ch)==='overdue';
+  });
+
+  let html='';
+  if(overdue.length){
+    html+=`<div class="alert alert-err" style="margin-bottom:1rem">
+      ⚠️ ${overdue.length} alumno${overdue.length>1?'s':''} con reto vencido pendiente de revisión:
+      ${overdue.map(a=>`<strong>${a.name}</strong>`).join(', ')}
+    </div>`;
+  }
+
+  if(!athletes.length){ el.innerHTML='<div class="empty">No hay alumnos cargados.</div>'; return; }
+
+  html+=athletes.map(a=>{
+    const ch=getChallenge(a.id);
+    const status=challengeStatus(ch);
+    const info=ti(a.tier);
+    const thresholds=ch?ch.thresholds||0:0;
+    let statusBadge='';
+    let challengeInfo='<span style="color:#b4b2a9;font-size:13px">Sin reto</span>';
+    if(status==='active'){
+      const left=challengeDaysLeft(ch);
+      statusBadge=`<span class="badge badge-amber">En curso · ${left}d</span>`;
+      challengeInfo=`<div style="font-size:13px;color:#5f5e5a;margin-top:4px">"${ch.text}"</div>`;
+    } else if(status==='overdue'){
+      statusBadge=`<span class="badge badge-red">¡Revisar!</span>`;
+      challengeInfo=`<div style="font-size:13px;color:#5f5e5a;margin-top:4px">"${ch.text}"</div>`;
+    }
+    return`<div class="challenge-card ${status==='overdue'?'challenge-overdue':status==='active'?'challenge-pending':''}" style="cursor:pointer" onclick="openProfile(${a.id});setTimeout(()=>{document.querySelectorAll('.tab')[6].click()},100)">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        ${avatarHTML(a,'avatar-md')}
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span style="font-size:15px;font-weight:600">${a.name}</span>
+            <span class="tier-badge" style="background:${info.bg};color:${info.color};border-color:${info.border};font-size:11px;padding:2px 8px">${a.tier||'—'}</span>
+            ${statusBadge}
+          </div>
+          ${challengeInfo}
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-size:20px;font-weight:700;color:#534AB7">${thresholds}</div>
+          <div style="font-size:11px;color:#888780">umbrales</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  el.innerHTML=html;
+}
+
+checkBdays();
+renderDash();
+</script>
+</body>
+</html>
