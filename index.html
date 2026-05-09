@@ -2827,8 +2827,19 @@ function renderLeaderboard(){
     {emoji:'🏆',label:'Mayor cantidad de logros',fn:a=>logs.filter(l=>l.athleteId===a.id&&l.type==='achievement').length,unit:'logros'},
     {emoji:'🔥',label:'Mejor racha de asistencia',fn:a=>bestStreak(a.id),unit:'clases'},
     {emoji:'📅',label:'Mayor asistencia total',fn:a=>logs.filter(l=>l.athleteId===a.id&&l.type==='attendance'&&l.status==='present').length,unit:'clases'},
-    {emoji:'⚡',label:'Promedio rounds por sesión',fn:a=>{const s=logs.filter(l=>l.athleteId===a.id&&l.type==='sparring');if(!s.length)return 0;return Math.round(s.reduce((t,l)=>t+(l.rounds||0),0)/s.length*10)/10;},unit:'rds/ses'},
-    {emoji:'🌟',label:'Mejor rango',fn:a=>{const o=['A+','A','A-','B+','B','B-','C+','C','C-'];const i=o.indexOf(a.tier);return i===-1?-99:-i;},unit:'',display:a=>a.tier||'—'},
+{emoji:'⚡',label:'Promedio rounds por sesión',fn:a=>{
+  const s=logs.filter(l=>
+    l.athleteId===a.id &&
+    l.type==='sparring' &&
+    (l.rounds||0)<=15
+  );
+
+  if(!s.length)return 0;
+
+  return Math.round(
+    s.reduce((t,l)=>t+(l.rounds||0),0)/s.length*10
+  )/10;
+},unit:'rds/ses'},    {emoji:'🌟',label:'Mejor rango',fn:a=>{const o=['A+','A','A-','B+','B','B-','C+','C','C-'];const i=o.indexOf(a.tier);return i===-1?-99:-i;},unit:'',display:a=>a.tier||'—'},
   ];
 
   const MEDALS=['🥇','🥈','🥉','4°','5°'];
@@ -3099,8 +3110,19 @@ function renderPortalLeaderboard(){
     {emoji:'🏆',label:'Mayor cantidad de logros',fn:a=>logs.filter(l=>l.athleteId===a.id&&l.type==='achievement').length,unit:'logros'},
     {emoji:'🔥',label:'Mejor racha de asistencia',fn:a=>bestStreak(a.id),unit:'clases'},
     {emoji:'📅',label:'Mayor asistencia total',fn:a=>logs.filter(l=>l.athleteId===a.id&&l.type==='attendance'&&l.status==='present').length,unit:'clases'},
-    {emoji:'⚡',label:'Promedio rounds por sesión',fn:a=>{const s=logs.filter(l=>l.athleteId===a.id&&l.type==='sparring');if(!s.length)return 0;return Math.round(s.reduce((t,l)=>t+(l.rounds||0),0)/s.length*10)/10;},unit:'rds/ses'},
-  ];
+{emoji:'⚡',label:'Promedio rounds por sesión',fn:a=>{
+  const s=logs.filter(l=>
+    l.athleteId===a.id &&
+    l.type==='sparring' &&
+    (l.rounds||0)<=15
+  );
+
+  if(!s.length)return 0;
+
+  return Math.round(
+    s.reduce((t,l)=>t+(l.rounds||0),0)/s.length*10
+  )/10;
+},unit:'rds/ses'},  ];
   const MEDALS=['🥇','🥈','🥉','4°','5°'];
   document.getElementById('portal-leaderboard').innerHTML = CATS.map(cat=>{
     const ranked=[...athletes].map(a=>({a,val:cat.fn(a)})).sort((x,y)=>y.val-x.val).slice(0,5);
