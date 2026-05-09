@@ -2828,11 +2828,28 @@ function renderLeaderboard(){
     {emoji:'🔥',label:'Mejor racha de asistencia',fn:a=>bestStreak(a.id),unit:'clases'},
     {emoji:'📅',label:'Mayor asistencia total',fn:a=>logs.filter(l=>l.athleteId===a.id&&l.type==='attendance'&&l.status==='present').length,unit:'clases'},
 {emoji:'⚡',label:'Promedio rounds por sesión',fn:a=>{
-  const s=logs.filter(l=>
-    l.athleteId===a.id &&
-    l.type==='sparring' &&
-    (l.rounds||0)<=15
+
+  let s = logs.filter(
+    l=>l.athleteId===a.id && l.type==='sparring'
   );
+
+  // ordenar por fecha
+  s.sort((a,b)=>a.date.localeCompare(b.date));
+
+  // ignorar primeros 3 registros
+  s = s.slice(3);
+
+  // mínimo 10 sesiones válidas
+  if(s.length < 10) return 0;
+
+  // promedio rounds
+  return Math.round(
+    (
+      s.reduce((t,l)=>t+(l.rounds||0),0)
+      / s.length
+    ) * 10
+  ) / 10;
+}
 
   if(!s.length)return 0;
 
@@ -3111,12 +3128,28 @@ function renderPortalLeaderboard(){
     {emoji:'🔥',label:'Mejor racha de asistencia',fn:a=>bestStreak(a.id),unit:'clases'},
     {emoji:'📅',label:'Mayor asistencia total',fn:a=>logs.filter(l=>l.athleteId===a.id&&l.type==='attendance'&&l.status==='present').length,unit:'clases'},
 {emoji:'⚡',label:'Promedio rounds por sesión',fn:a=>{
-  const s=logs.filter(l=>
-    l.athleteId===a.id &&
-    l.type==='sparring' &&
-    (l.rounds||0)<=15
+
+  let s = logs.filter(
+    l=>l.athleteId===a.id && l.type==='sparring'
   );
 
+  // ordenar por fecha
+  s.sort((a,b)=>a.date.localeCompare(b.date));
+
+  // ignorar primeros 3 registros
+  s = s.slice(3);
+
+  // mínimo 10 sesiones válidas
+  if(s.length < 10) return 0;
+
+  // promedio rounds
+  return Math.round(
+    (
+      s.reduce((t,l)=>t+(l.rounds||0),0)
+      / s.length
+    ) * 10
+  ) / 10;
+}
   if(!s.length)return 0;
 
   return Math.round(
